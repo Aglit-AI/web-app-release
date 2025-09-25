@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aglit AI - Completing Sign In...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+            margin: 2rem;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        a {
+            color: #87CEEB;
+            text-decoration: underline;
+        }
+        a:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <h2>Completing sign in...</h2>
+        <p>Opening Aglit AI app...</p>
+        <p><small>If the app doesn't open automatically, please make sure Aglit AI is installed on your computer.</small></p>
+    </div>
+
+    <script>
+        console.log('OAuth callback page loaded');
+        console.log('Current URL:', window.location.href);
+
+        // Extract OAuth parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const error = urlParams.get('error');
+
+        console.log('OAuth parameters:', { code: code ? 'present' : 'missing', state: state ? 'present' : 'missing', error });
+
+        if (error) {
+            console.error('OAuth error:', error);
+            document.querySelector('.container').innerHTML = `
+                <h2>Authentication Error</h2>
+                <p>There was an error during sign in: <strong>${error}</strong></p>
+                <p>Please try signing in again from the desktop app.</p>
+                <p><a href="/">Return to homepage</a></p>
+            `;
+        } else if (code && state) {
+            console.log('Valid OAuth callback, attempting to open desktop app');
+
+            // Attempt to open the desktop app
+            const appUrl = `aglit://oauth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
+
+            console.log('Opening app with URL:', appUrl);
+
+            // Try to open the app link
+            try {
+                window.location.href = appUrl;
+            } catch (appError) {
+                console.error('Failed to open app link:', appError);
+            }
+
+            // Show fallback message after 3 seconds
+            setTimeout(() => {
+                console.log('Showing fallback message');
+                document.querySelector('.container').innerHTML = `
+                    <h2>Almost done!</h2>
+                    <p>Please check your <strong>Aglit AI desktop app</strong> to complete sign in.</p>
+                    <p><small>If the app didn't open automatically, make sure it's installed and try the sign in process again from within the app.</small></p>
+                    <br>
+                    <p><a href="/">Return to homepage</a></p>
+                `;
+            }, 3000);
+        } else {
+            console.error('Invalid OAuth callback - missing required parameters');
+            document.querySelector('.container').innerHTML = `
+                <h2>Invalid Request</h2>
+                <p>Missing required OAuth parameters.</p>
+                <p>Please try signing in again from the desktop app.</p>
+                <p><a href="/">Return to homepage</a></p>
+            `;
+        }
+
+        // Additional logging for debugging
+        setTimeout(() => {
+            console.log('Page state after 5 seconds:', {
+                url: window.location.href,
+                userAgent: navigator.userAgent,
+                timestamp: new Date().toISOString()
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
